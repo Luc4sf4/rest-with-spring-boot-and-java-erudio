@@ -1,0 +1,10 @@
+br\com\erudio\exception\ExceptionsResponse.class
+br\com\erudio\services\PersonServices.class
+br\com\erudio\mapper\DozerMapper.class
+br\com\erudio\repositorys\PersonRepository.class
+br\com\erudio\exception\ResourceNotFoundException.class
+br\com\erudio\Startup.class
+br\com\erudio\controller\PersonController.class
+br\com\erudio\data\vo\v1\PersonVo.class
+br\com\erudio\model\Person.class
+br\com\erudio\exception\handler\CustomizeResponseEntityExceptionHandler.class
