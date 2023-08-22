@@ -13,9 +13,8 @@ import br.com.erudio.model.Perfil;
 @Repository
 public interface LoginRepository extends JpaRepository<Login, Long>{
 
-	@Query("Selec 1 FROM Login 1 WHERE 1.perfil = :perfil")
-	List<Login> findByPerfil(@Param("perfil") Perfil perfil);
-	
-	  List<Login> findByPerfilId(Long perfilId);
-	
+    @Query("SELECT l FROM Login l WHERE l.perfil = :perfil")
+    List<Login> findByPerfil(@Param("perfil") Perfil perfil);
+
+    List<Login> findByPerfilId(Long perfilId);
 }
