@@ -16,7 +16,6 @@
 	<properties>
 		<java.version>20</java.version>
 		<dozer.version>6.4.0</dozer.version>
-		<flyway.version>8.0.0</flyway.version> <!-- Specify the desired Flyway version -->
 		<mysql.version>8.0.26</mysql.version> <!-- Specify the desired MySQL version -->
 	</properties>
 	<dependencies>
@@ -36,16 +35,9 @@
 </dependency>
 
 	<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-core</artifactId>
-			<version>9.21.1</version>
-		</dependency>
-		
-	<dependency>
-			<groupId>org.flywaydb</groupId>
-			<artifactId>flyway-mysql</artifactId>
-			<version>9.21.1</version>
-		</dependency>
+    <groupId>org.flywaydb</groupId>
+    <artifactId>flyway-mysql</artifactId>
+	</dependency>
 		
 
 <dependency>
@@ -79,7 +71,7 @@
 			   <artifactId>flyway-maven-plugin</artifactId>
 			   
 			   <configuration>
-			      <url>jdbc:mysql://localhost:3307/rest_with_spring_boot_erudio?useTimezone=true&amp;serverTimezone=UTC&amp;useSSL=false</url>
+			      <url>jdbc:mysql://localhost:3307/rest_with_spring_boot_erudio</url>
 			      <user>root</user>
 			      <password>admin123</password>
 			   </configuration>
@@ -88,6 +80,13 @@
 			         <groupId>mysql</groupId>
 			         <artifactId>mysql-connector-java</artifactId>
 			         <version>${mysql.version}</version>
+			         <exclusions>
+			            <exclusion>
+			               <artifactId>slf4j-api</artifactId>
+			               <groupId>org.slf4j</groupId>
+			            </exclusion>
+			         </exclusions> 
+			         
 			      </dependency>
 			   </dependencies>
 			</plugin>
