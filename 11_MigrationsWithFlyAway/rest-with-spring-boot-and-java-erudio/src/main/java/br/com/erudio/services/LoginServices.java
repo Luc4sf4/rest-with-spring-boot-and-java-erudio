@@ -1,6 +1,5 @@
 package br.com.erudio.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -9,10 +8,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import br.com.erudio.data.vo.v1.LoginVO;
+import br.com.erudio.data.vo.v1.PerfilVo;
 import br.com.erudio.exception.ResourceNotFoundException;
 import br.com.erudio.mapper.DozerMapper;
 import br.com.erudio.model.Login;
+import br.com.erudio.model.Perfil;
 import br.com.erudio.repositorys.LoginRepository;
+import br.com.erudio.repositorys.PerfilRepository;
 
 
 
@@ -21,57 +23,82 @@ public class LoginServices {
 
 	private Logger logger = Logger.getLogger(LoginServices.class.getName());
 
+	@Autowired
+	private PerfilRepository perfilRepository;
 	
 	
 	@Autowired
 	private LoginRepository repository;
 	
-	public LoginVO create(LoginVO login) {
+	public LoginVO create(LoginVO loginVo) {
 		logger.info("Createing one person");
 		
-		var entity = DozerMapper.parseObject(login, Login.class);
+		Login entity = new Login();
+		entity.setUsername(loginVo.getUsername());
 		
-		var vo = DozerMapper.parseObject(repository.save(entity), LoginVO.class );
+		Login savedLogin = repository.save(entity);
 		
-		return vo;
+		LoginVO savedLoginVo = new LoginVO();
+		savedLoginVo.setId(savedLogin.getId());
+		savedLoginVo.setPassword(savedLogin.getPassword());
+		savedLoginVo.setStatus(savedLogin.getStatus());
 		
+		return savedLoginVo;
 	}
 	
+		
+		public LoginVO update(LoginVO login){
+			
+			logger.info("Updating one Login! ");
+			
+			Login entity = repository.findById(login.getId()).
+					orElseThrow(() -> new ResourceNotFoundException("Not found for this id "));
+			
+			entity.setUsername(login.getUsername());
+			entity.setPassword(login.getPassword());
+			entity.setStatus(login.getStatus());
+			
+			Login updatedLogin = repository.save(entity);
+			
+			LoginVO updatedLoginVo = new LoginVO();
+			updatedLoginVo.setId(updatedLogin.getId());			
+			updatedLoginVo.setUsername(updatedLogin.getUsername());
+			updatedLoginVo.setPassword(updatedLogin.getPassword());
+			updatedLoginVo.setStatus(updatedLogin.getStatus());
+			updatedLogin.setPerfil(updatedLogin.getPerfil());
+			
+			return updatedLoginVo;
+			
+		}
 	
-	public LoginVO update(LoginVO login){
-		
-		logger.info("Updating one Login! ");
-		
-		var entity = repository.findById(login.getId()).
-				orElseThrow(() -> new ResourceNotFoundException("Not found for this id "));
-		
-		entity.setUsername(login.getUsername());
-		entity.setPassword(login.getPassword());
-		entity.setStatus(login.getStatus());
-		
-		var vo = DozerMapper.parseObject(repository.save(entity), LoginVO.class );
-		
-		return vo;
-		
-	}
-	
-	public void delete(Long id) {
-		
-		logger.info("FInd all people! ");
-		
-		var entity = repository.findById(id).
-				orElseThrow(() -> new ResourceNotFoundException("Not found for this id"));
-		
-		
-		repository.delete(entity);
-	}
-	
+		public void delete(Long id) {
+		    logger.info("Deleting perfil with ID: " + id);
+
+		    Login entity = repository.findById(id)
+		            .orElseThrow(() -> new ResourceNotFoundException("Perfil not found with id: " + id));
+
+		    repository.delete(entity);
+		}
 	
 	public List<LoginVO> findAll(){
 		
 		logger.info("Find all logins ");
+	
+		List<Login> logins = repository.findAll();
+	
+		List<LoginVO> loginVos = logins.stream().map(
+	 login -> {
+			
+		LoginVO loginVo = new LoginVO();	
+		loginVo.setId(login.getId());	
+		loginVo.setUsername(login.getUsername());
+		loginVo.setStatus(login.getStatus());
+		loginVo.setPerfilVo(null);
+		return loginVo;
 		
-		return DozerMapper.parseListObjects(repository.findAll(), LoginVO.class);
+		}).collect(Collectors.toList());
+	
+		return loginVos;
 		
 	}
 	
@@ -79,21 +106,62 @@ public class LoginServices {
 		
 		logger.info("Finding one LoginVo");
 		
-		var entity = repository.findById(id).
+		Login entity = repository.findById(id).
 				orElseThrow(() -> new ResourceNotFoundException("Not found for this id "));
 		
-		return DozerMapper.parseObject(entity, LoginVO.class);
+		LoginVO loginVo = new LoginVO();
+		loginVo.setId(entity.getId());
+		loginVo.setUsername(entity.getUsername());
+		loginVo.setPassword(entity.getPassword());
+		loginVo.setStatus(entity.getStatus());
+		
+		
+		return loginVo;         
 		
 	}
 	
+	public LoginVO addPerfilToUsuario(Long perfilId, Long usuarioId) {
+        Perfil perfil = perfilRepository.findById(perfilId)
+            .orElseThrow(() -> new ResourceNotFoundException("Perfil not found with id: " + perfilId));
 
-    public List<LoginVO> findByPerfilId(Long perfilId) {
-    	
-        List<Login> loginEntities = repository.findByPerfilId(perfilId);
+        Login usuario = repository.findById(usuarioId)
+            .orElseThrow(() -> new ResourceNotFoundException("Usuario not found with id: " + usuarioId));
 
-    	return DozerMapper.parseListObjects(loginEntities, LoginVO.class);
+        usuario.setPerfil(perfil);
+        
+        
+        
+        Login updateLogin = repository.save(usuario);
+        
+        
+        
+        /*
+         Pegar o parent e transformar em Vo
+         Parent está na classe Perfil 
+         usando o "updatedlogin.getPerfil.getParent()"
+         usando uma condição como esta: if(updatedlogin.getPerfil().getParent() == null ){}
+         
+         */
+        
+        PerfilVo parentVo  = null;
   
-     }
+        if(updateLogin.getPerfil().getParent() != null) {
+        	
+        	parentVo = new PerfilVo(updateLogin.getPerfil().getParent().getId(), updateLogin.getPerfil().getNome(), null);
+        	
+        }
+        
+        
+        PerfilVo perfilVo = new PerfilVo(updateLogin.getPerfil().getId(), updateLogin.getPerfil().getNome(), parentVo);
+
+        LoginVO loginVo =  new LoginVO(updateLogin.getId(),updateLogin.getUsername(),updateLogin.getPassword(), updateLogin.getStatus(), perfilVo);
+        
+        loginVo.setPerfilVo(perfilVo);
+        
+        return loginVo;
+    }
+
+	
 	
 	
 }

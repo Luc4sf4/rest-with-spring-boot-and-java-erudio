@@ -1,29 +1,36 @@
 package br.com.erudio.model;
 
-import java.util.List;
-
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.Table;
 
 @Entity
+@Table(name = "perfil")
 public class Perfil {
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String nome;
+	private String nome;
 
-    @OneToMany(mappedBy = "perfil")
-    private List<Login> usuarios;
+	@OneToOne
+	@JoinColumn(name ="id")
+	private Perfil parent;
+	
+	
+	
+	
+	public Long getId() {
+		return id;
+	}
 
-    @ManyToOne
-    @JoinColumn(name = "parent_id")
-    private Perfil parent;
+	public void setId(Long id) {
+		this.id = id;
+	}
 
 	public String getNome() {
 		return nome;
@@ -31,14 +38,6 @@ public class Perfil {
 
 	public void setNome(String nome) {
 		this.nome = nome;
-	}
-
-	public List<Login> getUsuarios() {
-		return usuarios;
-	}
-
-	public void setUsuarios(List<Login> usuarios) {
-		this.usuarios = usuarios;
 	}
 
 	public Perfil getParent() {
@@ -49,5 +48,6 @@ public class Perfil {
 		this.parent = parent;
 	}
 
-   
+	
+
 }

@@ -21,6 +21,21 @@ public class LoginVO implements Serializable {
 
 	private PerfilVo perfilVo;
 	
+	public LoginVO() {}
+
+	
+		
+	public LoginVO(Long id, String username, String password, int status, PerfilVo perfilVo) {
+		
+		this.id = id;
+		this.username = username;
+		this.password = password;
+		this.status = status;
+		this.perfilVo = perfilVo;
+	}
+
+
+
 	public PerfilVo getPerfilVo() {
 		return perfilVo;
 	}
@@ -31,8 +46,7 @@ public class LoginVO implements Serializable {
 	}
 
 
-	public LoginVO() {}
-
+	
 	
 	public Long getId() {
 		return id;

@@ -14,9 +14,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.erudio.data.vo.v1.LoginVO;
 import br.com.erudio.data.vo.v1.PerfilVo;
-import br.com.erudio.services.LoginServices;
 import br.com.erudio.services.PerfilServices;
 
 @RestController
@@ -25,76 +23,58 @@ public class PerfilController {
 
 	@Autowired
 	private PerfilServices services;
+
 	
-	@Autowired
-	private LoginServices loginServices;
-	
+
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public PerfilVo findById(@PathVariable(value = "id") Long id) {
-	    PerfilVo perfil = services.findById(id);
-	    List<LoginVO> loginVoList = loginServices.findByPerfilId(id);
-	    perfil.setLoginVo(loginVoList);
-	    return perfil;
+		PerfilVo perfil = services.findById(id);
+		return perfil;
 	}
-	
+
 	@GetMapping()
-	public List<PerfilVo> findAll(){
-		
+	public List<PerfilVo> findAll() {
+
 		List<PerfilVo> perfis = services.findall();
-		
-		for(PerfilVo perfil : perfis){
-		
-			List<LoginVO> loginVo= loginServices.findByPerfilId(perfil.getId());
-			
-			perfil.setLoginVo(loginVo);
-			
-		}
-		
-		
+
 		return perfis;
-		
+
 	}
-	
+
 	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public PerfilVo create(@RequestBody PerfilVo perfil) {
-	    PerfilVo created = services.create(perfil);
 
-	    if (perfil.getLoginVo() != null) {
-	        for (LoginVO loginVo : perfil.getLoginVo()) {
-	            loginVo.setPerfilVo(created); // Ajuste esta linha
-	            LoginVO createdLogin = loginServices.create(loginVo);
-	            created.getLoginVo().add(createdLogin);
-	        }
-	    }
+		if (perfil.getParent() != null && perfil.getParent().getId() != null) {
+			PerfilVo parentPerfil = services.findById(perfil.getParent().getId());
+			perfil.setParent(parentPerfil);
+		}
 
-	    return created;
+		PerfilVo created = services.create(perfil);
+
+		return created;
 	}
-	
+
 	@PutMapping(value = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
 	public PerfilVo update(@PathVariable(value = "id") Long id, @RequestBody PerfilVo perfil) {
-	    PerfilVo updatedPerfil = services.update(perfil);
+		PerfilVo updatedPerfil = services.update(perfil);
 
-	    if (perfil.getLoginVo() != null) {
-	        for (LoginVO loginVo : perfil.getLoginVo()) {
-	            loginVo.setPerfilVo(updatedPerfil);
-	            if (loginVo.getId() != null) {
-	                loginServices.update(loginVo); 
-	            } else {
-	                LoginVO createdLogin = loginServices.create(loginVo); 
-	                updatedPerfil.getLoginVo().add(createdLogin);
-	            }
-	        }
-	    }
-
-	    return updatedPerfil;
+		return updatedPerfil;
 	}
-	
+
 	@DeleteMapping(value = "/{id}")
 	public ResponseEntity<?> delete(@PathVariable(value = "id") Long id) {
-	    services.delete(id);
-	    return ResponseEntity.noContent().build();
+		services.delete(id);
+		return ResponseEntity.noContent().build();
 	}
 	
+	 @PostMapping("/{perfilId}/parent/{parentId}")
+	    public PerfilVo addParentToPerfil(
+	    		@PathVariable Long perfilId, @PathVariable Long parentId) {
+	        PerfilVo perfilVo = services.addParentToPerfil(perfilId, parentId);
+	        
+	        return perfilVo;
+	    }
+
 	
 	
 }

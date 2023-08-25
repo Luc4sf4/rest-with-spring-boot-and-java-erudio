@@ -1,7 +1,6 @@
 package br.com.erudio.data.vo.v1;
 
 import java.io.Serializable;
-import java.util.List;
 import java.util.Objects;
 
 public class PerfilVo implements Serializable {
@@ -14,12 +13,21 @@ public class PerfilVo implements Serializable {
 
 	private Long id;
 	private String nome;
-	private List<LoginVO> usuarios;
+
 	private PerfilVo parent;
-	private List<LoginVO> loginVo;
+
 	
 	
-	public  PerfilVo() {}
+	public PerfilVo() {}
+	
+	public PerfilVo(Long id, String nome, PerfilVo parent) {
+		
+		this.id = id;
+		this.nome = nome;
+		this.parent = parent;
+		
+		
+	}
 
 	public Long getId() {
 		return id;
@@ -37,13 +45,6 @@ public class PerfilVo implements Serializable {
 		this.nome = nome;
 	}
 
-	public List<LoginVO> getUsuarios() {
-		return usuarios;
-	}
-
-	public void setUsuarios(List<LoginVO> usuarios) {
-		this.usuarios = usuarios;
-	}
 
 	public PerfilVo getParent() {
 		return parent;
@@ -55,7 +56,7 @@ public class PerfilVo implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id, nome, parent, usuarios);
+		return Objects.hash(id, nome, parent);
 	}
 
 	@Override
@@ -67,17 +68,13 @@ public class PerfilVo implements Serializable {
 		if (getClass() != obj.getClass())
 			return false;
 		PerfilVo other = (PerfilVo) obj;
-		return Objects.equals(id, other.id) && Objects.equals(nome, other.nome) && Objects.equals(parent, other.parent)
-				&& Objects.equals(usuarios, other.usuarios);
+		return Objects.equals(id, other.id) && Objects.equals(nome, other.nome) && Objects.equals(parent, other.parent);
 	}
 
-	public List<LoginVO> getLoginVo() {
-		return loginVo;
-	}
+	
 
-	public void setLoginVo(List<LoginVO> loginVo2) {
-		this.loginVo = loginVo2;
-	}
+
+	
 	
 	
 	

@@ -1,19 +1,15 @@
 package br.com.erudio.services;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import br.com.erudio.data.vo.v1.LoginVO;
 import br.com.erudio.data.vo.v1.PerfilVo;
 import br.com.erudio.exception.ResourceNotFoundException;
-import br.com.erudio.mapper.DozerMapper;
-import br.com.erudio.model.Login;
 import br.com.erudio.model.Perfil;
-import br.com.erudio.repositorys.LoginRepository;
 import br.com.erudio.repositorys.PerfilRepository;
 
 @Service
@@ -24,63 +20,43 @@ public class PerfilServices {
 	@Autowired
 	private PerfilRepository repository;
 
-	@Autowired
-	private LoginRepository loginRepository;
 
-	public PerfilVo create(PerfilVo perfil) {
+	public PerfilVo create(PerfilVo perfilVo) {
 		logger.info("Creating a new Perfil ");
 
-		var entity = DozerMapper.parseObject(perfil, Perfil.class);
-
-		var vo = DozerMapper.parseObject(repository.save(entity), PerfilVo.class);
-
-		return vo;
+	
+		Perfil entity = new Perfil();
+		entity.setNome(perfilVo.getNome());
+		
+		Perfil savedPerfil = repository.save(entity);
+		
+		PerfilVo savedPerfilVo = new PerfilVo();
+		savedPerfilVo.setId(savedPerfil.getId());
+		savedPerfilVo.setNome(savedPerfil.getNome());
+		
+		
+		return savedPerfilVo;
 	}
 
+	
 	public PerfilVo update(PerfilVo perfil) {
 
 		logger.info("updating one Perfil");
 
-		var entity = repository.findById(perfil.getId())
+		Perfil entity = repository.findById(perfil.getId())
 				.orElseThrow(() -> new ResourceNotFoundException("Not found by this id"));
-
+	       
 		entity.setNome(perfil.getNome());
+		
+		
+        Perfil updatedperfil = repository.save(entity);
 
-		if (perfil.getParent() != null) {
+        
+       
+      
+        PerfilVo updatedPerfilVo = new PerfilVo(updatedperfil.getParent().getId(), updatedperfil.getParent().getNome(), null );
 
-			Perfil parenteEntity = repository.findById(perfil.getParent().getId())
-					.orElseThrow(() -> new ResourceNotFoundException("Parent Perfil not found by id "));
-			entity.setParent(parenteEntity);
-
-		} else {
-
-			entity.setParent(null);
-
-		}
-
-		if (perfil.getUsuarios() != null) {
-
-			List<Login> usuarioEntities = new ArrayList<>();
-
-			for (LoginVO login : perfil.getUsuarios()) {
-
-				Login usuarioEntity = loginRepository.findById(login.getId())
-						.orElseThrow(() -> new ResourceNotFoundException("User not found by id: " + login.getId()));
-
-				usuarioEntities.add(usuarioEntity);
-
-			}
-			entity.setUsuarios(usuarioEntities);
-
-		} else {
-
-			entity.setUsuarios(null);
-
-		}
-
-		var vo = DozerMapper.parseObject(repository.save(entity), PerfilVo.class);
-
-		return vo;
+		return updatedPerfilVo;
 
 	}
 
@@ -88,7 +64,7 @@ public class PerfilServices {
 
 		logger.info("deleting Perfil! ");
 
-		var entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Not found by this id "));
+		Perfil entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Not found by this id "));
 
 		repository.delete(entity);
 
@@ -98,18 +74,60 @@ public class PerfilServices {
 
 		logger.info("Find all Perfil ");
 
-		return DozerMapper.parseListObjects(repository.findAll(), PerfilVo.class);
-
+		List<Perfil> perfis = repository.findAll();
+		
+		List<PerfilVo> perfilVos = perfis.stream()
+				.map(
+			perfil -> {
+			PerfilVo perfilVo = new PerfilVo();
+			perfilVo.setId(perfil.getId());
+			perfilVo.setNome(perfil.getNome());
+			return perfilVo;
+			
+		}).collect(Collectors.toList());
+		
+		return perfilVos;
 	}
 
 	public PerfilVo findById(Long id) {
 
 		logger.info("Find one PerfilVo ");
 
-		var entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Id not founded"));
+		Perfil entity = repository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Id not founded"));
 
-		return DozerMapper.parseObject(entity, PerfilVo.class);
+		PerfilVo perfilVo = new PerfilVo();
+		perfilVo.setId(entity.getId());
+		perfilVo.setNome(entity.getNome());
+		
 
+		return perfilVo;
 	}
+	
+	public PerfilVo addParentToPerfil(Long perfilId, Long parentId) {
+        Perfil perfil = repository.findById(perfilId)
+            .orElseThrow(() -> new ResourceNotFoundException("Perfil not found with id: " + perfilId));
+
+        Perfil parent = repository.findById(parentId)
+        		.orElseThrow(() -> new ResourceNotFoundException("Perfil not found with id: " + parentId));
+
+        
+        perfil.setParent(parent);
+        
+        
+       
+
+        Perfil updatedperfil = repository.save(perfil);
+
+        
+       
+      
+        PerfilVo parentvo = new PerfilVo(updatedperfil.getParent().getId(), updatedperfil.getParent().getNome(), null );
+
+        //contructor what i wanna get   //the parametters	
+        PerfilVo perfilvo = new PerfilVo(updatedperfil.getId(),updatedperfil.getNome(), parentvo);
+               
+        return perfilvo;
+    }
+ 
 
 }

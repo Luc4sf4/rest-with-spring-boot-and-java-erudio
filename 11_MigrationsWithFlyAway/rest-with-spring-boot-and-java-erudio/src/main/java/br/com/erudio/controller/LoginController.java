@@ -27,7 +27,9 @@ public class LoginController {
 	@Autowired
 	private LoginServices service;
 	
-	@Autowired PerfilServices perfilServices;
+	
+	@Autowired 
+	PerfilServices perfilServices;
 	
 	@GetMapping(value = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public LoginVO findByID(@PathVariable(value = "id") Long id) {
@@ -77,4 +79,17 @@ public class LoginController {
 		
 	}
 	
+	  @PostMapping("/{usuarioId}/perfil/{perfilId}")
+	    public LoginVO addUserToPerfil(
+	    		@PathVariable Long perfilId, @PathVariable Long usuarioId) {
+	        LoginVO loginVo = service.addPerfilToUsuario(perfilId, usuarioId);
+	        
+	        return loginVo;
+	    }
+
 }
+	
+	
+	
+	
+
