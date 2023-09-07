@@ -1,16 +1,17 @@
 package br.com.erudio.services;
 
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
+
 import java.util.List;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.linkTo;
-import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.methodOn;
-
 import br.com.erudio.controller.BookController;
 import br.com.erudio.data.vo.v1.BookVo;
+import br.com.erudio.exception.RequeiredObjectIsNullException;
 import br.com.erudio.exception.ResourceNotFoundException;
 import br.com.erudio.mapper.DozerMapper;
 import br.com.erudio.model.Book;
@@ -27,6 +28,9 @@ public class BookService {
 	
 	public BookVo create (BookVo book){
 		
+		if(book == null) throw new RequeiredObjectIsNullException();
+
+		
 		logger.info("Adding a new Book");
 		
 		var entity = DozerMapper.parseObject(book, Book.class);
@@ -39,6 +43,9 @@ public class BookService {
 	}
 	
 	public BookVo update(BookVo book){
+		
+		if(book == null) throw new RequeiredObjectIsNullException();
+
 		
 		logger.info("Updating one Book");
 		
@@ -69,7 +76,7 @@ public class BookService {
 				orElseThrow( () -> new ResourceNotFoundException("Not found by this Id"));
 		
 		var vo = DozerMapper.parseObject(entity, BookVo.class);
-		
+		vo.add(linkTo(methodOn(BookController.class).findById(id)).withSelfRel());
 		return vo;
 		
 		
